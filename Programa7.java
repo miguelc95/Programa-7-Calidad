@@ -170,14 +170,13 @@ import java.math.RoundingMode;
             }
             icont++;
           }
-          double[][] A = { { N, calc.sumWi,  calc.sumXi, calc.sumYi },
-                         { calc.sumWi, calc.sumWiSquared, calc.sumWiXi, calc.sumWiYi },
-                         { calc.sumXi, calc.sumWiXi, calc.sumXiSquared, calc.sumXiYi },
-                         {calc.sumYi, calc.sumWiYi, calc.sumXiYi, calc.sumYiSquared}
+          double[][] A = { { N, calc.sumWi,  calc.sumXi, calc.sumYi, calc.sumZi },
+                         { calc.sumWi, calc.sumWiSquared, calc.sumWiXi, calc.sumWiYi, calc.sumWiZi },
+                         { calc.sumXi, calc.sumWiXi, calc.sumXiSquared, calc.sumXiYi, calc.sumXiZi },
+                         {calc.sumYi, calc.sumWiYi, calc.sumXiYi, calc.sumYiSquared,calc.sumYiZi }
                        };
-          double[] b = { calc.sumZi, calc.sumWiZi, calc.sumXiZi, calc.sumYiZi };
 
-           x = lsolve(A, b);
+           x = Gauss(A);
 
 
           return true;
@@ -188,47 +187,33 @@ import java.math.RoundingMode;
    }
 
    //&i
-   public static double[] lsolve(double[][] A, double[] b) {
-        int N  = b.length;
+   public double[] Gauss(double A[][]){
+       int n = 4;
+       double c;
+       double[] x = new double[n];
 
-        for (int p = 0; p < N; p++) {
-
-            // find pivot row and swap
-            int max = p;
-            for (int i = p + 1; i < N; i++) {
-                if (Math.abs(A[i][p]) > Math.abs(A[max][p])) {
-                    max = i;
-                }
-            }
-            double[] temp = A[p]; A[p] = A[max]; A[max] = temp;
-            double   t    = b[p]; b[p] = b[max]; b[max] = t;
-
-            // singular or nearly singular
-            if (Math.abs(A[p][p]) <= EPSILON) {
-                throw new RuntimeException("Matrix is singular or nearly singular");
-            }
-
-            // pivot within A and b
-            for (int i = p + 1; i < N; i++) {
-                double alpha = A[i][p] / A[p][p];
-                b[i] -= alpha * b[p];
-                for (int j = p; j < N; j++) {
-                    A[i][j] -= alpha * A[p][j];
-                }
-            }
-        }
-
-        // back substitution
-        double[] x = new double[N];
-        for (int i = N - 1; i >= 0; i--) {
-            double sum = 0.0;
-            for (int j = i + 1; j < N; j++) {
-                sum += A[i][j] * x[j];
-            }
-            x[i] = (b[i] - sum) / A[i][i];
-        }
-        return x;
-    }
+       for (int j = 0; j < n; j++)
+       {
+           for (int i = 0; i < n; i++)
+           {
+               if (i != j)
+               {
+                   c = A[i][j] / A[j][j];
+                   for (int k = 0; k < n + 1; k++)
+                   {
+                       A[i][k] = A[i][k] - c * A[j][k];
+                   }
+               }
+           }
+       }
+       for (int i = 0; i < n; i++)
+       {
+           x[i] = A[i][n] / A[i][i];
+           /*if ((A[i,i] != A[i,i]) || (A[i,i] == 0))
+               break;*/
+       }
+       return x;
+   }
  }
  //&p-Programa7
 public class Programa7{
