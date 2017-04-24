@@ -109,7 +109,6 @@ import java.math.RoundingMode;
    }
 //&i
    public void Imprimir(){
-     //&d=8
      DecimalFormat Redondeo = new DecimalFormat("#.#####");
      Redondeo.setRoundingMode(RoundingMode.HALF_UP);
      DecimalFormat df = new DecimalFormat("#.00000");
@@ -127,7 +126,7 @@ import java.math.RoundingMode;
      System.out.println("zk  =  "+Redondeo.format(zk));
 
    }
-
+//&i
    public boolean leer(){
      //&d=10
      int icont = 0;
@@ -187,6 +186,8 @@ import java.math.RoundingMode;
           return false;
         }
    }
+
+   //&i
    public static double[] lsolve(double[][] A, double[] b) {
         int N  = b.length;
 
@@ -231,7 +232,7 @@ import java.math.RoundingMode;
  }
  //&p-Programa7
 public class Programa7{
-  //&b=21
+  //&b=26
     public static void main(String[] args) {
       ArrayList<DatosArchivo> Archivos = new ArrayList<DatosArchivo>();
 //&d=1
