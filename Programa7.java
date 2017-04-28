@@ -17,6 +17,7 @@ import java.math.RoundingMode;
  * @author miguelcuellar
  */
 //&p-Calculos
+//Clase calculos que guarda los datos de acumulacion de las parejas de datos así como las betas
   class Calculos{
     public double sumWi = 0.0;
     public double sumXi = 0.0;
@@ -37,6 +38,7 @@ import java.math.RoundingMode;
     public double b3 = 0.0;
 
 //&i
+//Inicializador sin parametros
   public Calculos(){
     sumWi = 0.0;
     sumXi = 0.0;
@@ -58,18 +60,22 @@ import java.math.RoundingMode;
   }
 
 //&i
+//setB0
   public void setB0(double num){
     this.b0 = num;
   }
 //&i
+//setB1
   public void setB1(double num){
     this.b1 = num;
   }
 //&i
+//setB1
   public void setB2(double num){
     this.b2 = num;
   }
   //&i
+  //setB3
     public void setB3(double num){
       this.b3 = num;
     }
@@ -79,43 +85,46 @@ import java.math.RoundingMode;
  }
 
 //&p-DatosArchivo
+//Clase en donde se guardan todos los datos del archivo y se lee el mismo
  class DatosArchivo{
-   //&b=34
    public String sNombre = " ";
    double wk = 0.0, xk = 0.0, yk = 0.0;
    Calculos calc = new Calculos();
    int N = 0;
    double[] x;
-   private static final double EPSILON = 1e-10;
-//&d=3
 
 //&i
+//Inicializador sin parametros
+
    public DatosArchivo(){
-     sNombre = " "; //&m
-//&d=2
+     sNombre = " ";
    }
 //&i
+//Inicializador con el nombre de parametro
    public DatosArchivo(String n){
      sNombre = n;
-//&d=2
+
    }
 //&i
+//Set del nombre del archivo
    public void setNombre(String n){
      sNombre = n;
    }
 //&i
+// get del nombre del archivo
    public String getNombre(){
      return sNombre;
    }
 //&i
+//Metodo que imprime los valores resultantes
    public void Imprimir(){
      DecimalFormat Redondeo = new DecimalFormat("#.#####");
      Redondeo.setRoundingMode(RoundingMode.HALF_UP);
      DecimalFormat df = new DecimalFormat("#.00000");
      System.out.println("N  = "+N);
      System.out.println("wk  =  "+ df.format(wk));
-     System.out.println("wk  =  "+ df.format(xk));
-     System.out.println("wk  =  "+ df.format(yk));
+     System.out.println("xk  =  "+ df.format(xk));
+     System.out.println("yk  =  "+ df.format(yk));
      System.out.println("----------------------");
      System.out.println("b0  =  "+Redondeo.format(x[0]));
      System.out.println("b1  =  "+Redondeo.format(x[1]));
@@ -123,12 +132,12 @@ import java.math.RoundingMode;
      System.out.println("b3  =  "+Redondeo.format(x[3]));
      System.out.println("----------------------");
      double zk = x[0]+x[1]*wk+x[2]*xk+yk*x[3];
-     System.out.println("zk  =  "+Redondeo.format(zk));
+     System.out.printf("zk  =  %.05f \n",zk);
 
    }
 //&i
+//Metodo que lee y hace calculos del archivo
    public boolean leer(){
-     //&d=10
      int icont = 0;
      double wi,xi,yi,zi;
      wi=xi=yi=zi=0;
@@ -141,7 +150,7 @@ import java.math.RoundingMode;
           }
           BufferedReader info = new BufferedReader(new FileReader(sNombre));
           while((linea = info.readLine()) != null) {
-            if (icont==0) {//&m
+            if (icont==0) {
               String[] parteSeparada = linea.split("\\,");
               wk = Double.parseDouble(parteSeparada[0]);
               xk = Double.parseDouble(parteSeparada[1]);
@@ -170,15 +179,13 @@ import java.math.RoundingMode;
             }
             icont++;
           }
-          double[][] A = { { N, calc.sumWi,  calc.sumXi, calc.sumYi, calc.sumZi },
+          double[][] acums = { { N, calc.sumWi,  calc.sumXi, calc.sumYi, calc.sumZi },
                          { calc.sumWi, calc.sumWiSquared, calc.sumWiXi, calc.sumWiYi, calc.sumWiZi },
                          { calc.sumXi, calc.sumWiXi, calc.sumXiSquared, calc.sumXiYi, calc.sumXiZi },
                          {calc.sumYi, calc.sumWiYi, calc.sumXiYi, calc.sumYiSquared,calc.sumYiZi }
                        };
 
-           x = Gauss(A);
-
-
+           x = Betas(acums);
           return true;
         }
         catch(IOException e){
@@ -187,37 +194,30 @@ import java.math.RoundingMode;
    }
 
    //&i
-   public double[] Gauss(double A[][]){
-       int n = 4;
-       double c;
-       double[] x = new double[n];
-
-       for (int j = 0; j < n; j++)
-       {
-           for (int i = 0; i < n; i++)
-           {
-               if (i != j)
-               {
-                   c = A[i][j] / A[j][j];
-                   for (int k = 0; k < n + 1; k++)
-                   {
-                       A[i][k] = A[i][k] - c * A[j][k];
+  //Metodo que hace gauss y calcula las betas
+   public double[] Betas(double acums[][]){
+       double[] betas = new double[4];
+       double div;
+       for (int x = 0; x < 4; x++){
+           for (int y = 0; y < 4; y++){
+               if (y != x){
+                   div = acums[y][x]/acums[x][x];
+                   for (int z = 0; z < 4 + 1; z++){
+                       acums[y][z] = acums[y][z] - div * acums[x][z];
                    }
                }
            }
        }
-       for (int i = 0; i < n; i++)
-       {
-           x[i] = A[i][n] / A[i][i];
-           /*if ((A[i,i] != A[i,i]) || (A[i,i] == 0))
-               break;*/
+       for (int j=0; j<4; j++){
+           betas[j] = acums[j][4]/acums[j][j];
        }
-       return x;
+       return betas;
    }
  }
  //&p-Programa7
+ //Clase Programa7 donde se piden los datos
 public class Programa7{
-  //&b=26
+  //&b=23
     public static void main(String[] args) {
       ArrayList<DatosArchivo> Archivos = new ArrayList<DatosArchivo>();
 //&d=1
